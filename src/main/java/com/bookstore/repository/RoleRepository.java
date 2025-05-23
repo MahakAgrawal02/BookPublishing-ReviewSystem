@@ -9,5 +9,7 @@ import com.bookstore.entity.Role;
 
 @Repository
 public interface RoleRepository extends CrudRepository<Role, Long> {
-	Optional<Role> findByName(String name);
+    
+    // Find a role entity by its name
+    Optional<Role> findByName(String name);
 }

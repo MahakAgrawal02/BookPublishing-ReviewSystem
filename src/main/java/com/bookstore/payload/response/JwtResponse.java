@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class JwtResponse {
-	
-	private String token;
-
+    // JWT token returned after successful authentication
+    private String token;
 }

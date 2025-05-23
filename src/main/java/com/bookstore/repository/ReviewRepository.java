@@ -9,8 +9,10 @@ import com.bookstore.entity.Review;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
-	
-	List<Review> findByBook_BookId(Integer bookId);
-	
-	List<Review> findByBook_BookIdOrderByTimestampDesc(Integer bookId);
+
+    // Find all reviews for a given book by bookId
+    List<Review> findByBook_BookId(Integer bookId);
+    
+    // Find all reviews for a given book ordered by timestamp descending (most recent first)
+    List<Review> findByBook_BookIdOrderByTimestampDesc(Integer bookId);
 }

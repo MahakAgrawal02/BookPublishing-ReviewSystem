@@ -10,10 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.bookstore.payload.request.UserRequest;
 import com.bookstore.payload.response.JwtResponse;
@@ -22,57 +19,66 @@ import com.bookstore.repository.UserRepository;
 import com.bookstore.services.UserDetailsImpl;
 import com.bookstore.services.UserDetailsServiceImpl;
 import com.bookstore.utils.JwtUtil;
+
 import jakarta.validation.Valid;
 
+/**
+ * REST controller to handle user authentication and registration.
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class UserController {
-	
+
 	@Autowired
-	AuthenticationManager authenticationManager;
+	private AuthenticationManager authenticationManager;
+
 	@Autowired
-	UserRepository userRepo;
+	private UserRepository userRepo;
+
 	@Autowired
-	RoleRepository roleRepo;
+	private RoleRepository roleRepo;
+
 	@Autowired
-	UserDetailsServiceImpl userService;
-	
+	private UserDetailsServiceImpl userService;
+
 	@Autowired
-	PasswordEncoder encoder;
+	private PasswordEncoder encoder;
 
 	@Autowired
 	private JwtUtil jwtUtil;
-	
-	@PostMapping("/signup")
-	public ResponseEntity<?> signup(@Valid @RequestBody UserRequest userInfo){
-		
-		String roleName;
-		String roleInput = userInfo.getRoleName().toUpperCase();
-		if(roleInput.equals("ADMIN")) {
-			roleName = "ADMIN";
-		}
-		else {
-			roleName = "USER";
-		}
-		
-		userInfo.setRoleName(roleName);
-		
-		boolean isSaved = userService.saveUser(userInfo);
-		
-		if(!isSaved) {
-			
-			String message = "User with username=" + "already exists. Please, log in.";
-			return new ResponseEntity<String>(message, HttpStatus.CONFLICT);
-		}
-		else {
-			return new ResponseEntity<UserRequest>(userInfo, HttpStatus.CREATED);
-		}
-		
 
+	/**
+	 * Registers a new user (admin or regular user).
+	 *
+	 * @param userInfo the user registration data
+	 * @return the created user info or conflict message
+	 */
+	@PostMapping("/signup")
+	public ResponseEntity<?> signup(@Valid @RequestBody UserRequest userInfo) {
+
+		// Normalize role input
+		String roleInput = userInfo.getRoleName().toUpperCase();
+		String roleName = roleInput.equals("ADMIN") ? "ADMIN" : "USER";
+		userInfo.setRoleName(roleName);
+
+		boolean isSaved = userService.saveUser(userInfo);
+
+		if (!isSaved) {
+			String message = "User with username=" + userInfo.getUsername() + " already exists. Please, log in.";
+			return new ResponseEntity<>(message, HttpStatus.CONFLICT);
+		} else {
+			return new ResponseEntity<>(userInfo, HttpStatus.CREATED);
+		}
 	}
 
+	/**
+	 * Authenticates a user and generates a JWT token.
+	 *
+	 * @param userInfo the login credentials
+	 * @return JWT token if login is successful
+	 */
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody UserRequest userInfo){
+	public ResponseEntity<?> login(@RequestBody UserRequest userInfo) {
 
 		Authentication authentication = authenticationManager.authenticate(
 			new UsernamePasswordAuthenticationToken(
@@ -82,17 +88,14 @@ public class UserController {
 		);
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
-		
+
 		String jwt = jwtUtil.generateJwtToken(authentication);
-		
+
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
 		userDetails.getAuthorities().stream()
-				.map(item -> item.getAuthority())
-				.collect(Collectors.toList());
-		
-		return new ResponseEntity<>(new JwtResponse(jwt), HttpStatus.OK);
-		
-	}
+			.map(item -> item.getAuthority())
+			.collect(Collectors.toList()); // Authorities extracted, can be used if needed
 
+		return new ResponseEntity<>(new JwtResponse(jwt), HttpStatus.OK);
+	}
 }

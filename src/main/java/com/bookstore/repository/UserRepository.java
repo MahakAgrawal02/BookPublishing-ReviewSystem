@@ -12,12 +12,14 @@ import com.bookstore.entity.UserEntity;
 @Repository
 public interface UserRepository extends CrudRepository<UserEntity, Integer> {
 
-	Optional<UserEntity> findByUsername(String username);
-	
-	Boolean existsByUsername(String username);
+    // Retrieve a user by their unique username
+    Optional<UserEntity> findByUsername(String username);
+    
+    // Check if a user exists by their username
+    Boolean existsByUsername(String username);
 
-	@Modifying
-	@Query("delete from com.bookstore.entity.UserEntity u where username = :username")
-	int deleteByUsername(String username);
-
+    // Delete a user entity based on username
+    @Modifying
+    @Query("delete from com.bookstore.entity.UserEntity u where username = :username")
+    int deleteByUsername(String username);
 }

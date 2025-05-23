@@ -12,11 +12,13 @@ public class NotificationThread extends Thread {
     @Override
     public void run() {
         try {
-            // Simulate network delay
+            // Simulate network delay for sending notification
             Thread.sleep(2000);
+            // Log notification delivery simulation
             System.out.println("Notification sent to " + authorEmail + ": Your book '" + bookTitle + "' has a new review.");
         } catch (InterruptedException e) {
+            // Log if thread execution is interrupted
             System.err.println("Notification thread interrupted: " + e.getMessage());
         }
     }
-} 
+}
